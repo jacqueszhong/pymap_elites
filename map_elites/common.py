@@ -42,6 +42,7 @@ import math
 import numpy as np
 import multiprocessing
 from pathlib import Path
+import os
 import sys
 import random
 from collections import defaultdict
@@ -70,6 +71,7 @@ default_params = \
         "iso_sigma": 0.01,
         "line_sigma": 0.2
     }
+default_log_folder = ""
 
 class Species:
     def __init__(self, x, desc, fitness, centroid=None):
@@ -215,7 +217,7 @@ def __save_archive(archive, gen):
     def write_array(a, f):
         for i in a:
             f.write(str(i) + ' ')
-    filename = 'archive_' + str(gen) + '.dat'
+    filename = os.path.join(default_log_folder, 'archive_' + str(gen) + '.dat')
     with open(filename, 'w') as f:
         for k in archive.values():
             f.write(str(k.fitness) + ' ')

@@ -43,6 +43,7 @@ import math
 import numpy as np
 import multiprocessing
 from pathlib import Path
+import os
 import sys
 import random
 from collections import defaultdict
@@ -173,6 +174,7 @@ def compute(dim_map=-1,
     t_size = 1  # size of the tournament (if using distance) [will be selected by the bandit]
     successes = defaultdict(list) # count the successes
     while (n_evals < max_evals):
+        print("eval = " + str(n_evals))
         to_evaluate = []
         to_evaluate_centroid = []
         if len(archive) <= params['random_init'] * n_tasks:
@@ -195,6 +197,7 @@ def compute(dim_map=-1,
             rand1 = np.random.randint(len(keys), size=params['batch_size'])
             rand2 = np.random.randint(len(keys), size=params['batch_size'])
             for n in range(0, params['batch_size']):
+                print("batch = " + str(n))
                 # parent selection
                 x = archive[keys[rand1[n]]]
                 y = archive[keys[rand2[n]]]
@@ -221,7 +224,7 @@ def compute(dim_map=-1,
             b_evals = 0
             n_e = [len(v) for v in successes.values()]
             print(n_evals, n_e)
-            np.savetxt('t_size.dat', np.array(n_e))
+            np.savetxt(os.path.join(cm.default_log_folder, 't_size.dat'), np.array(n_e))
         if log_file != None:
             fit_list = np.array([x.fitness for x in archive.values()])
             log_file.write("{} {} {} {} {} {} {}\n".format(n_evals, len(archive.keys()), fit_list.max(), np.mean(fit_list), np.median(fit_list), np.percentile(fit_list, 5), np.percentile(fit_list, 95)))
