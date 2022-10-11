@@ -96,6 +96,8 @@ def bandit(successes, n_niches):
 def select_niche(x, z, f, centroids, tasks, t_size, params, use_distance=False):
     to_evaluate = []
     if not use_distance:
+        print("Random no distance")
+
         # No distance: evaluate on a random niche
         niche = np.random.randint(len(tasks))
         to_evaluate += [(z, f, tasks[niche], centroids[niche, :], params)]
@@ -110,7 +112,11 @@ def select_niche(x, z, f, centroids, tasks, t_size, params, use_distance=False):
             n = rand[p]
             niches_centroids += [centroids[n, :]]
             niches_tasks += [tasks[n]]
+
+        print("X1=",niches_centroids)
+        print("X2=",[x.centroid])
         cd = distance.cdist(niches_centroids, [x.centroid], 'euclidean')
+        print(cd)
         cd_min = np.argmin(cd)
         to_evaluate += [(z, f, niches_tasks[cd_min], niches_centroids[cd_min], params)]
     return to_evaluate
@@ -178,8 +184,10 @@ def compute(dim_map=-1,
         to_evaluate = []
         to_evaluate_centroid = []
         if len(archive) <= params['random_init'] * n_tasks:
+            print("Random init")
             # initialize the map with random individuals
             for i in range(0, params['random_init_batch']):
+                print("Random init batch")
                 # create a random individual
                 x = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
                 # we take a random task
