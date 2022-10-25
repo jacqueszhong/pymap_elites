@@ -69,7 +69,11 @@ default_params = \
         "max": 1,
         # only useful if you use the 'iso_dd' variation operator
         "iso_sigma": 0.01,
-        "line_sigma": 0.2
+        "line_sigma": 0.2,
+
+        "xsm_port": 5565,
+        "xsm_port_min": 5565,
+        "xsm_port_max": 5585
     }
 default_log_folder = ""
 

@@ -67,8 +67,8 @@ def add_to_archive(s, archive):
 # evaluate a single vector (z) with a function f and return a species
 # t = vector, function
 def __evaluate(t):
-    z, f, task, centroid, _ = t
-    fit = f(z, task)
+    z, f, task, centroid, configs = t
+    fit = f(z, task, configs)
     return cm.Species(z, task, fit, centroid)
 
 # bandit opt for optimizing tournament size
@@ -113,10 +113,10 @@ def select_niche(x, z, f, centroids, tasks, t_size, params, use_distance=False):
             niches_centroids += [centroids[n, :]]
             niches_tasks += [tasks[n]]
 
-        print("X1=",niches_centroids)
-        print("X2=",[x.centroid])
+        # print("X1=",niches_centroids)
+        # print("X2=",[x.centroid])
         cd = distance.cdist(niches_centroids, [x.centroid], 'euclidean')
-        print(cd)
+        # print(cd)
         cd_min = np.argmin(cd)
         to_evaluate += [(z, f, niches_tasks[cd_min], niches_centroids[cd_min], params)]
     return to_evaluate
@@ -180,19 +180,25 @@ def compute(dim_map=-1,
     t_size = 1  # size of the tournament (if using distance) [will be selected by the bandit]
     successes = defaultdict(list) # count the successes
     while (n_evals < max_evals):
-        print("eval = " + str(n_evals))
+        print("Evaluation n°" + str(n_evals))
         to_evaluate = []
         to_evaluate_centroid = []
         if len(archive) <= params['random_init'] * n_tasks:
             print("Random init")
             # initialize the map with random individuals
             for i in range(0, params['random_init_batch']):
-                print("Random init batch")
+
+                # xsm port
+                params['xsm_port'] += 1
+                if (params['xsm_port'] > params['xsm_port_max']):
+                    params['xsm_port'] = params['xsm_port_min']
+
                 # create a random individual
                 x = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
                 # we take a random task
                 n = np.random.randint(0, n_tasks)
-                to_evaluate += [(x, f, tasks[n], centroids[n], params)]
+                to_evaluate += [(x, f, tasks[n], centroids[n], params.copy())]
+
             s_list = cm.parallel_eval(__evaluate, to_evaluate, pool, params)
             n_evals += len(to_evaluate)
             b_evals += len(to_evaluate)
@@ -205,14 +211,19 @@ def compute(dim_map=-1,
             rand1 = np.random.randint(len(keys), size=params['batch_size'])
             rand2 = np.random.randint(len(keys), size=params['batch_size'])
             for n in range(0, params['batch_size']):
-                print("batch = " + str(n))
+                
+                # xsm port
+                params['xsm_port'] += 1
+                if (params['xsm_port'] > params['xsm_port_max']):
+                    params['xsm_port'] = params['xsm_port_min']
+
                 # parent selection
                 x = archive[keys[rand1[n]]]
                 y = archive[keys[rand2[n]]]
                 # copy & add variation
                 z = variation_operator(x.x, y.x, params)
                 # different modes for multi-task (to select the niche)
-                to_evaluate += select_niche(x, z, f, centroids, tasks, t_size, params, use_distance)
+                to_evaluate += select_niche(x, z, f, centroids, tasks, t_size, params.copy(), use_distance)
             # parallel evaluation of the fitness
             s_list = cm.parallel_eval(__evaluate, to_evaluate, pool, params)
             n_evals += len(to_evaluate)
@@ -231,7 +242,6 @@ def compute(dim_map=-1,
             cm.__save_archive(archive, n_evals)
             b_evals = 0
             n_e = [len(v) for v in successes.values()]
-            print(n_evals, n_e)
             np.savetxt(os.path.join(cm.default_log_folder, 't_size.dat'), np.array(n_e))
         if log_file != None:
             fit_list = np.array([x.fitness for x in archive.values()])
