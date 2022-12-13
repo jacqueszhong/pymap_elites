@@ -180,7 +180,7 @@ def compute(dim_map=-1,
     t_size = 1  # size of the tournament (if using distance) [will be selected by the bandit]
     successes = defaultdict(list) # count the successes
     while (n_evals < max_evals):
-        print("Evaluation n°" + str(n_evals))
+        print("Evaluation " + str(n_evals))
         to_evaluate = []
         to_evaluate_centroid = []
         if len(archive) <= params['random_init'] * n_tasks:
